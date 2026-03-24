@@ -51,7 +51,7 @@ try {
 	reg add 'HKU\DefUser\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.log\UserChoice' /v ProgId /t REG_SZ /d LogFile /f | Out-Null
 
 	# ========================
-	# Dark mode (this replaces your .theme launch)
+	# Dark mode
 	# ========================
 	reg add 'HKU\DefUser\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize' /v AppsUseLightTheme /t REG_DWORD /d 0 /f | Out-Null
 	reg add 'HKU\DefUser\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize' /v SystemUsesLightTheme /t REG_DWORD /d 0 /f | Out-Null
@@ -61,21 +61,15 @@ try {
 }
 
 # ========================
-# HKLM policy (unchanged)
+# HKLM policy
 # ========================
 reg add 'HKLM\SOFTWARE\Policies\Microsoft\Dsh' /v AllowNewsAndInterests /t REG_DWORD /d 0 /f | Out-Null
 
-# ====================================================
-# Copy LayoutModification.xml to Default User profile
-# ====================================================
+# ========================
+# Taskbar layout
+# ========================
 $SourceLayoutFile = Join-Path $PSScriptRoot 'LayoutModification.xml'
 $DestinationFolder = 'C:\Users\Default\AppData\Local\Microsoft\Windows\Shell'
 $DestinationLayoutFile = Join-Path $DestinationFolder 'LayoutModification.xml'
-
-# Ensure folder exists
-If (-not (Test-Path $DestinationFolder)) {
-	New-Item -Path $DestinationFolder -ItemType Directory -Force | Out-Null
-}
-
-# Copy file
+If (-not (Test-Path $DestinationFolder)) { New-Item -Path $DestinationFolder -ItemType Directory -Force | Out-Null }
 Copy-Item -Path $SourceLayoutFile -Destination $DestinationLayoutFile -Force
