@@ -50,6 +50,20 @@ if ($BootMedia) {
 Write-Host "Boot media ejected. Continuing..." -ForegroundColor Green
 Write-Host ""
 
+$RepoRoot = 'https://raw.githubusercontent.com/Valiante/osdcloud-vits/main'
+$SetupCompletePath = 'X:\OSDCloud\Config\Scripts\SetupComplete'
+
+New-Item -Path $SetupCompletePath -ItemType Directory -Force | Out-Null
+
+Write-Host "Downloading SetupComplete files..." -ForegroundColor Yellow
+
+Invoke-WebRequest -Uri "$RepoRoot/SetupComplete/SetupComplete.ps1" -OutFile "$SetupCompletePath\SetupComplete.ps1"
+Invoke-WebRequest -Uri "$RepoRoot/SetupComplete/SetupComplete.cmd" -OutFile "$SetupCompletePath\SetupComplete.cmd"
+Invoke-WebRequest -Uri "$RepoRoot/SetupComplete/LayoutModification.xml" -OutFile "$SetupCompletePath\LayoutModification.xml"
+
+Write-Host "SetupComplete files staged." -ForegroundColor Green
+Write-Host ""
+
 Start-OSDCloud -OSName "Windows 11 25H2 x64" -OSEdition 'Enterprise' -OSActivation 'Retail' -OSLanguage 'en-gb'
 
 wpeutil reboot
