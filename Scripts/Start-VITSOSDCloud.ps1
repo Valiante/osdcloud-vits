@@ -30,8 +30,9 @@ Write-Host "Modified by Marc Jolley (@Valiante)" -ForegroundColor White
 Write-Host ""
 Write-Host "Waiting for boot media to be ejected..." -ForegroundColor Yellow
 
-# Use @() to force an array so .Count always works
-while (@(Get-CimInstance Win32_LogicalDisk | Where-Object { $_.VolumeName -like "OSDCloud*" }).Count -gt 0) {
+# The loop continues as long as the command returns an object ($true)
+# It exits when the command returns nothing ($null/$false)
+while (Get-CimInstance Win32_LogicalDisk | Where-Object { $_.VolumeName -like "OSDCloud*" }) {
     Start-Sleep -Seconds 1
 }
 
