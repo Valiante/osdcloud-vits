@@ -30,21 +30,8 @@ Write-Host "Modified by Marc Jolley (@Valiante)" -ForegroundColor White
 Write-Host ""
 Write-Host "Waiting for boot media to be ejected..." -ForegroundColor Yellow
 
-$BootMedia = Get-CimInstance Win32_LogicalDisk | Where-Object {
-    $_.DriveType -eq 5 -and $_.VolumeName
-} | Select-Object -First 1
-
-if ($BootMedia) {
-    $BootDeviceID = $BootMedia.DeviceID
-    $BootVolumeName = $BootMedia.VolumeName
-
-    do {
-        Start-Sleep -Seconds 1
-
-        $StillPresent = Get-CimInstance Win32_LogicalDisk | Where-Object {
-            $_.DeviceID -eq $BootDeviceID -and $_.VolumeName -eq $BootVolumeName
-        }
-    } while ($StillPresent)
+while ((Get-CimInstance Win32_LogicalDisk | Where-Object { $_.VolumeName -like "OSDCloud*" }).Count -gt 0) {
+    Start-Sleep -Seconds 1
 }
 
 Write-Host "Boot media ejected. Continuing..." -ForegroundColor Green
