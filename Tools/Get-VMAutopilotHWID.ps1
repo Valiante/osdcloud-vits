@@ -7,8 +7,9 @@
     C:\HWID\AutopilotHWID-<serial>.csv inside the guest; this script shuts the VM down,
     mounts its OS disk read-only, copies the CSV out, dismounts and starts the VM again.
 
-    Do not run this while Windows setup is still in progress - shutting down before OOBE
-    will break the build.
+    Must be run elevated - Hyper-V Administrators membership alone is not enough to mount
+    a VHD. Do not run this while Windows setup is still in progress - shutting down before
+    OOBE will break the build.
 
 .PARAMETER VMName
     Name of the Hyper-V VM.
@@ -22,6 +23,7 @@
 .EXAMPLE
     .\Get-VMAutopilotHWID.ps1 -VMName CMW-MJ-VMTEST03
 #>
+#Requires -RunAsAdministrator
 [CmdletBinding()]
 param (
 	[Parameter(Mandatory)]
