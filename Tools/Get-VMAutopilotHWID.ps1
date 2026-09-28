@@ -5,7 +5,8 @@
 .DESCRIPTION
     Run on the Hyper-V host once the VM is sitting at OOBE. SetupComplete.ps1 writes
     C:\HWID\AutopilotHWID-<serial>.csv inside the guest; this script shuts the VM down,
-    mounts its OS disk read-only, copies the CSV out, dismounts and starts the VM again.
+    mounts its OS disk read-only, copies the CSV out and dismounts it. The VM is left off,
+    since it needs a reboot after the Intune import to pick up the Autopilot profile anyway.
 
     Must be run elevated - Hyper-V Administrators membership alone is not enough to mount
     a VHD. Do not run this while Windows setup is still in progress - shutting down before
@@ -17,8 +18,8 @@
 .PARAMETER Destination
     Folder to copy the CSV to. Defaults to the current user's Desktop.
 
-.PARAMETER NoRestart
-    Leave the VM switched off afterwards.
+.PARAMETER Start
+    Start the VM again afterwards.
 
 .EXAMPLE
     .\Get-VMAutopilotHWID.ps1 -VMName CMW-MJ-VMTEST03
@@ -31,13 +32,12 @@ param (
 
 	[string]$Destination = [Environment]::GetFolderPath('Desktop'),
 
-	[switch]$NoRestart
+	[switch]$Start
 )
 
 $ErrorActionPreference = 'Stop'
 
 $VM = Get-VM -Name $VMName
-$WasRunning = $VM.State -eq 'Running'
 
 if ($VM.State -ne 'Off') {
 	Write-Host "Shutting down $VMName..." -ForegroundColor Yellow
@@ -75,8 +75,10 @@ try {
 		ForEach-Object { Write-Host "Copied $($_.FullName)" -ForegroundColor Green }
 } finally {
 	Dismount-VHD -DiskNumber $Disk.Number
-	if ($WasRunning -and -not $NoRestart) {
+	if ($Start) {
 		Write-Host "Starting $VMName..." -ForegroundColor Yellow
 		Start-VM -VM $VM
+	} else {
+		Write-Host "$VMName left off - start it once the Intune import has completed." -ForegroundColor Yellow
 	}
 }
