@@ -73,3 +73,22 @@ $DestinationFolder = 'C:\Users\Default\AppData\Local\Microsoft\Windows\Shell'
 $DestinationLayoutFile = Join-Path $DestinationFolder 'LayoutModification.xml'
 If (-not (Test-Path $DestinationFolder)) { New-Item -Path $DestinationFolder -ItemType Directory -Force | Out-Null }
 Copy-Item -Path $SourceLayoutFile -Destination $DestinationLayoutFile -Force
+
+# ========================
+# Autopilot hardware hash
+# ========================
+# Same output as Get-WindowsAutopilotInfo, captured as SYSTEM before OOBE
+$HwidDir = 'C:\HWID'
+New-Item -Path $HwidDir -ItemType Directory -Force | Out-Null
+try {
+	$Serial = (Get-CimInstance -ClassName Win32_BIOS).SerialNumber
+	$DevDetail = Get-CimInstance -Namespace root/cimv2/mdm/dmmap -ClassName MDM_DevDetail_Ext01 -Filter "InstanceID='Ext' AND ParentID='./DevDetail'" -ErrorAction Stop
+	[pscustomobject]@{
+		'Device Serial Number' = $Serial
+		'Windows Product ID'   = ''
+		'Hardware Hash'        = $DevDetail.DeviceHardwareData
+	} | ConvertTo-Csv -NoTypeInformation | ForEach-Object { $_ -replace '"', '' } |
+		Set-Content -Path "$HwidDir\AutopilotHWID-$Serial.csv" -Encoding ASCII
+} catch {
+	$_ | Out-File -FilePath "$HwidDir\HWID-error.txt"
+}
